@@ -11,8 +11,6 @@
 
 package com.oneid.infrastructure.personalapi.dataobject;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.oneid.common.constant.TableConstant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +20,6 @@ import java.io.Serial;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName(TableConstant.PERSONAL_API_TOKEN_TABLE)
 public class PersonalApiTokenDO {
     /**
      * Serializable class with a defined serial version UID.

@@ -9,10 +9,28 @@
  See the Mulan PSL v2 for more details.
 */
 
-package com.oneid.infrastructure.mapper;
+package com.oneid.application.personalapi.vo;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.oneid.infrastructure.personalapi.dataobject.PersonalApiTokenDO;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public interface PersonalApiTokenDOMapper extends BaseMapper<PersonalApiTokenDO> {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class PersonalApiPermissionVO {
+    /**
+     * id.
+     */
+    private String id;
+
+    /**
+     * 权限名.
+     */
+    private String name;
+
+    /**
+     * 权限描述.
+     */
+    private String description;
 }

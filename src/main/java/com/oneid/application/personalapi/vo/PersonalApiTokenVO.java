@@ -9,36 +9,48 @@
  See the Mulan PSL v2 for more details.
 */
 
-package com.oneid.infrastructure.personalapi.dataobject;
+package com.oneid.application.personalapi.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serial;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PersonalApiPermissionDO {
-    /**
-     * Serializable class with a defined serial version UID.
-     */
-    @Serial
-    private static final long serialVersionUID = 1L;
-
+public class PersonalApiTokenVO {
     /**
      * id.
      */
     private String id;
 
     /**
-     * 权限名.
+     * 令牌描述名.
      */
     private String name;
 
     /**
-     * 权限描述.
+     * 权限列表.
      */
-    private String description;
+    private String permissionIds;
+
+    /**
+     * 权限列表.
+     */
+    private String permissionNames;
+
+    /**
+     * 过期时间.
+     */
+    private String expireAt;
+
+    /**
+     * 创建时间.
+     */
+    private String createAt;
+
+    /**
+     * 更新时间.
+     */
+    private String updateAt;
 }
