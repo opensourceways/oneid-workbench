@@ -72,7 +72,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
         <!-- util -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -87,6 +90,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+            <version>2.16.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
             <version>2.16.2</version>
         </dependency>
         <dependency>
@@ -173,29 +181,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.5.4.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.mybatis</groupId>
-                    <artifactId>mybatis-spring</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis-spring</artifactId>
-            <version>3.0.3</version>
+            <groupId>io.dapr</groupId>
+            <artifactId>dapr-sdk-springboot</artifactId>
+            <version>1.13.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dapr</groupId>
+            <artifactId>dapr-sdk</artifactId>
+            <version>1.13.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <version>8.3.0</version>
-        </dependency>
     </dependencies>
 
     <build>

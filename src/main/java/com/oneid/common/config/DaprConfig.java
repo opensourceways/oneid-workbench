@@ -9,10 +9,22 @@
  See the Mulan PSL v2 for more details.
 */
 
-package com.oneid.infrastructure.mapper;
+package com.oneid.common.config;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.oneid.infrastructure.personalapi.dataobject.PersonalApiUrlDO;
+import io.dapr.client.DaprClient;
+import io.dapr.client.DaprClientBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public interface PersonalApiUrlDOMapper extends BaseMapper<PersonalApiUrlDO> {
+@Configuration
+public class DaprConfig {
+    /**
+     * dapr实例化.
+     *
+     * @return dapr容器
+     */
+    @Bean
+    public DaprClient daprClient() {
+        return new DaprClientBuilder().build();
+    }
 }
