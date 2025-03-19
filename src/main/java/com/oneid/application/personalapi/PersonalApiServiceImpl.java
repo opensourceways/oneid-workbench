@@ -11,8 +11,43 @@
 
 package com.oneid.application.personalapi;
 
+import com.oneid.application.personalapi.dto.PersonalApiTokenDTO;
+import com.oneid.application.personalapi.dto.PersonalApiTokenDetailDTO;
+import com.oneid.application.personalapi.dto.PersonalApiTokenIdDTO;
+import com.oneid.application.personalapi.vo.PersonalApiTokenVO;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class PersonalApiServiceImpl implements PersonalApiService {
+    @Override
+    public void createToken(PersonalApiTokenDTO personalApiTokenDTO) {
+
+    }
+
+    @Override
+    public void updateToken(PersonalApiTokenDetailDTO personalApiTokenDetailDTO) {
+
+    }
+
+    @Override
+    public void refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO) {
+
+    }
+
+    @Override
+    public void deleteToken(PersonalApiTokenIdDTO personalApiTokenIdDTO) {
+
+    }
+
+    @Override
+    public List<PersonalApiTokenVO> getPersonalApiTokens(String userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<PersonalApiTokenVO> getAllPersonalApiTokens() {
+        return List.of();
+    }
 }

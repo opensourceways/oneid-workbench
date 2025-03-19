@@ -11,5 +11,23 @@
 
 package com.oneid.application.personalapi;
 
+import com.oneid.application.personalapi.dto.PersonalApiTokenDTO;
+import com.oneid.application.personalapi.dto.PersonalApiTokenDetailDTO;
+import com.oneid.application.personalapi.dto.PersonalApiTokenIdDTO;
+import com.oneid.application.personalapi.vo.PersonalApiTokenVO;
+
+import java.util.List;
+
 public interface PersonalApiService {
+    void createToken(PersonalApiTokenDTO personalApiTokenDTO);
+
+    void updateToken(PersonalApiTokenDetailDTO personalApiTokenDetailDTO);
+
+    void refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO);
+
+    void deleteToken(PersonalApiTokenIdDTO personalApiTokenIdDTO);
+
+    List<PersonalApiTokenVO> getPersonalApiTokens(String userId);
+
+    List<PersonalApiTokenVO> getAllPersonalApiTokens();
 }

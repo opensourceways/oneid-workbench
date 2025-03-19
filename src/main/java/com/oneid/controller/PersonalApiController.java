@@ -11,6 +11,8 @@
 
 package com.oneid.controller;
 
+import com.oneid.application.personalapi.PersonalApiService;
+import com.oneid.application.personalapi.PersonalApiServiceImpl;
 import com.oneid.application.personalapi.dto.PersonalApiTokenDTO;
 import com.oneid.application.personalapi.dto.PersonalApiTokenDetailDTO;
 import com.oneid.application.personalapi.dto.PersonalApiTokenIdDTO;
@@ -20,12 +22,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +42,9 @@ public class PersonalApiController {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PersonalApiController.class);
 
+    @Autowired
+    private PersonalApiServiceImpl personalApiServiceImpl;
+
     /**
      * 创建令牌.
      *
@@ -54,6 +57,7 @@ public class PersonalApiController {
                                               @Valid @RequestBody PersonalApiTokenDTO personalApiTokenDTO) {
         HashMap<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", "sdfdsfsdfsdf");
+        personalApiServiceImpl.createToken(personalApiTokenDTO);
         return ResultUtil.result(HttpStatus.OK, "success", tokenMap);
     }
 
@@ -82,6 +86,7 @@ public class PersonalApiController {
                                       @Valid @RequestBody PersonalApiTokenIdDTO personalApiTokenIdDTO) {
         HashMap<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", "sdfdsfsdfsdf");
+        personalApiServiceImpl.refreshToken(personalApiTokenIdDTO);
         return ResultUtil.result(HttpStatus.OK, "success", tokenMap);
     }
 
@@ -96,6 +101,7 @@ public class PersonalApiController {
     public ResponseEntity deleteToken(HttpServletRequest servletRequest,
                                        @Valid @RequestBody PersonalApiTokenIdDTO personalApiTokenIdDTO) {
         HashMap<String, String> tokenMap = new HashMap<>();
+        personalApiServiceImpl.deleteToken(personalApiTokenIdDTO);
         return ResultUtil.result(HttpStatus.OK, "success", tokenMap);
     }
 
@@ -103,11 +109,12 @@ public class PersonalApiController {
      * 获取私人令牌信息.
      *
      * @param servletRequest 请求
+     * @param userId 用户Id
      * @return 私人令牌信息
      */
     @RequestMapping(value = "/getToken", method = RequestMethod.GET)
-    public ResponseEntity getToken(HttpServletRequest servletRequest) {
-        List<PersonalApiTokenVO> personalApiTokenVOS = new ArrayList<>();
+    public ResponseEntity getToken(HttpServletRequest servletRequest, @Valid @RequestParam String userId) {
+        List<PersonalApiTokenVO> personalApiTokenVOS = personalApiServiceImpl.getPersonalApiTokens(userId);
         return ResultUtil.result(HttpStatus.OK, "success", personalApiTokenVOS);
     }
 
