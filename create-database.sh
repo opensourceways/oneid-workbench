@@ -27,7 +27,7 @@ CREATE TABLE personal_api_token (
   permission_ids varchar(255) NOT NULL,
   user_id varchar(255) NOT NULL,
   user_name varchar(255) NOT NULL,
-  expire_at datetime NOT NULL,
+  expire_at bigint NOT NULL,
   create_at datetime NOT NULL,
   update_at datetime NOT NULL,
   PRIMARY KEY (id),

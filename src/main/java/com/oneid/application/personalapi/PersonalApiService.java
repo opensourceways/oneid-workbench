@@ -14,12 +14,12 @@ package com.oneid.application.personalapi;
 import com.oneid.application.personalapi.dto.PersonalApiTokenDTO;
 import com.oneid.application.personalapi.dto.PersonalApiTokenDetailDTO;
 import com.oneid.application.personalapi.dto.PersonalApiTokenIdDTO;
-import com.oneid.application.personalapi.vo.PersonalApiTokenVO;
+import com.oneid.application.personalapi.dto.UserInfoDTO;
+import org.springframework.http.ResponseEntity;
 
-import java.util.List;
 
 public interface PersonalApiService {
-    void createToken(PersonalApiTokenDTO personalApiTokenDTO);
+    void createToken(PersonalApiTokenDTO personalApiTokenDTO, UserInfoDTO userInfoDTO);
 
     void updateToken(PersonalApiTokenDetailDTO personalApiTokenDetailDTO);
 
@@ -27,7 +27,7 @@ public interface PersonalApiService {
 
     void deleteToken(PersonalApiTokenIdDTO personalApiTokenIdDTO);
 
-    List<PersonalApiTokenVO> getPersonalApiTokens(String userId);
+    ResponseEntity getPersonalApiTokens(String userId);
 
-    List<PersonalApiTokenVO> getAllPersonalApiTokens();
+    ResponseEntity getAllPermissions();
 }

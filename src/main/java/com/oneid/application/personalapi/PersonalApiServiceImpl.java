@@ -14,40 +14,48 @@ package com.oneid.application.personalapi;
 import com.oneid.application.personalapi.dto.PersonalApiTokenDTO;
 import com.oneid.application.personalapi.dto.PersonalApiTokenDetailDTO;
 import com.oneid.application.personalapi.dto.PersonalApiTokenIdDTO;
+import com.oneid.application.personalapi.dto.UserInfoDTO;
 import com.oneid.application.personalapi.vo.PersonalApiTokenVO;
+import com.oneid.infrastructure.personalapi.PersonalApiMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class PersonalApiServiceImpl implements PersonalApiService {
-    @Override
-    public void createToken(PersonalApiTokenDTO personalApiTokenDTO) {
 
+    @Autowired
+    private PersonalApiMapper personalApiMapper;
+
+    @Override
+    public void createToken(PersonalApiTokenDTO personalApiTokenDTO, UserInfoDTO userInfoDTO) {
+        personalApiMapper.createPersonalApiToken(personalApiTokenDTO, userInfoDTO);
     }
 
     @Override
     public void updateToken(PersonalApiTokenDetailDTO personalApiTokenDetailDTO) {
-
+        personalApiMapper.updatePersonalApiToken(personalApiTokenDetailDTO);
     }
 
     @Override
     public void refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO) {
-
+        personalApiMapper.refreshPersonApiToken(personalApiTokenIdDTO);
     }
 
     @Override
     public void deleteToken(PersonalApiTokenIdDTO personalApiTokenIdDTO) {
-
+        personalApiMapper.deletePersonalApiToken(personalApiTokenIdDTO);
     }
 
     @Override
-    public List<PersonalApiTokenVO> getPersonalApiTokens(String userId) {
-        return List.of();
+    public ResponseEntity getPersonalApiTokens(String token) {
+        return personalApiMapper.getPersonalApiTokensByUserId(token);
     }
 
     @Override
-    public List<PersonalApiTokenVO> getAllPersonalApiTokens() {
-        return List.of();
+    public ResponseEntity getAllPermissions() {
+        return personalApiMapper.getAllPermissions();
     }
 }
