@@ -27,9 +27,9 @@ CREATE TABLE personal_api_token (
   permission_ids varchar(255) NOT NULL,
   user_id varchar(255) NOT NULL,
   user_name varchar(255) NOT NULL,
-  expire_at datetime NOT NULL,
-  create_at datetime NOT NULL,
-  update_at datetime NOT NULL,
+  expire_at bigint NOT NULL,
+  create_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  update_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP   ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE INDEX token_UNIQUE (token ASC) VISIBLE,
   INDEX user_id_UNIQUE (user_id ASC) VISIBLE
