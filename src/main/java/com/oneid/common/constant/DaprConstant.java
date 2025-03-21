@@ -51,4 +51,9 @@ public class DaprConstant {
      * 邮件优先级.
      */
     public static final String DAPR_EMAIL_PRIORITY = "priority";
+
+    /**
+     * redis绑定
+     */
+    public static final String DAPR_REDIS_BINDING = "oneid-workbench-redis";
 }
