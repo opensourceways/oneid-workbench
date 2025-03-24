@@ -11,6 +11,7 @@
 
 package com.oneid.infrastructure.personalapi.dataobject;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -45,30 +46,36 @@ public class PersonalApiTokenDO {
     /**
      * 权限列表.
      */
+    @JsonProperty("permission_ids")
     private String permissionIds;
 
     /**
      * 用户ID.
      */
+    @JsonProperty("user_id")
     private String userId;
 
     /**
      * 用户名.
      */
+    @JsonProperty("user_name")
     private String userName;
 
     /**
      * 过期时间(时间戳).
      */
+    @JsonProperty("expire_at")
     private Long expireAt;
 
     /**
      * 创建时间.
      */
+    @JsonProperty("create_at")
     private String createAt;
 
     /**
      * 更新时间.
      */
+    @JsonProperty("update_at")
     private String updateAt;
 }

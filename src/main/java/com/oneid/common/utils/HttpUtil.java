@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 public class HttpUtil {
@@ -22,7 +23,7 @@ public class HttpUtil {
      * @return 响应结果
      * @throws IOException 如果请求失败
      */
-    public static String sendGet(String url, Map<String, String> params) throws IOException {
+    public static ResponseResult sendGet(String url, Map<String, String> params) throws IOException {
         if (params != null && !params.isEmpty()) {
             url = buildUrlWithParams(url, params);
         }
@@ -42,7 +43,7 @@ public class HttpUtil {
      * @return 响应结果
      * @throws IOException 如果请求失败
      */
-    public static String sendPostJson(String url, String json) throws IOException {
+    public static ResponseResult sendPostJson(String url, String json) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -65,7 +66,7 @@ public class HttpUtil {
      * @return 响应结果
      * @throws IOException 如果请求失败
      */
-    public static String sendPostFormData(String url, Map<String, String> params) throws IOException {
+    public static ResponseResult sendPostFormData(String url, Map<String, String> params) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -90,7 +91,7 @@ public class HttpUtil {
      * @return 响应结果
      * @throws IOException 如果请求失败
      */
-    public static String sendGetWithHeaderAndCookie(String url, Map<String, String> params, Map<String, String> headers, String cookie) throws IOException {
+    public static ResponseResult sendGetWithHeaderAndCookie(String url, Map<String, String> params, Map<String, String> headers, String cookie) throws IOException {
         if (params != null && !params.isEmpty()) {
             url = buildUrlWithParams(url, params);
         }
@@ -153,13 +154,13 @@ public class HttpUtil {
     }
 
     /**
-     * 获取响应结果
+     * 获取响应结果及 Cookie
      *
      * @param connection HTTP 连接
-     * @return 响应结果
+     * @return 包含响应内容和 Cookie 的 ResponseResult 对象
      * @throws IOException 如果读取响应失败
      */
-    private static String getResponse(HttpURLConnection connection) throws IOException {
+    private static ResponseResult getResponse(HttpURLConnection connection) throws IOException {
         int responseCode = connection.getResponseCode();
         if (responseCode != HttpURLConnection.HTTP_OK) {
             ErrorCode errorCode = ErrorCode.fromCode(responseCode);
@@ -170,13 +171,42 @@ public class HttpUtil {
             }
         }
 
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-            StringBuilder response = new StringBuilder();
+        // 获取响应头中的 Cookie
+        Map<String, List<String>> headerFields = connection.getHeaderFields();
+        List<String> cookiesHeader = headerFields.get("Set-Cookie");
+
+        // 读取响应内容
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
             }
-            return response.toString();
+        }
+
+        // 返回包含响应内容和 Cookie 的对象
+        return new ResponseResult(response.toString(), cookiesHeader);
+    }
+
+    /**
+     * 用于封装响应结果和 Cookie 的类
+     */
+    public static class ResponseResult {
+        private final String response;
+        private final List<String> cookies;
+
+        public ResponseResult(String response, List<String> cookies) {
+            this.response = response;
+            this.cookies = cookies;
+        }
+
+        public String getResponse() {
+            return response;
+        }
+
+        public List<String> getCookies() {
+            return cookies;
         }
     }
 }

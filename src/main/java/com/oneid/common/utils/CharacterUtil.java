@@ -6,6 +6,7 @@ import cn.authing.core.types.S;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CharacterUtil {
 
@@ -66,6 +67,16 @@ public class CharacterUtil {
             return "";
         }
         return String.join(",", stringList);
+    }
+
+    /**
+     * 生成6位随机数字
+     * @return 6位随机数字
+     */
+    public static String generateRandom6DigitNumber() {
+        // 生成 100000 到 999999 之间的随机数
+        int randomNumber = ThreadLocalRandom.current().nextInt(100000, 1000000);
+        return String.valueOf(randomNumber);
     }
 }
 

@@ -12,6 +12,7 @@
 package com.oneid.infrastructure.dapr;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneid.common.constant.DaprConstant;
 import io.dapr.client.DaprClient;
 import io.dapr.utils.TypeRef;
@@ -21,8 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class DaprSqlActuator {
@@ -37,6 +40,7 @@ public class DaprSqlActuator {
     @Autowired
     private DaprClient daprClient;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     /**
      * 查询数据.
      *
@@ -45,19 +49,23 @@ public class DaprSqlActuator {
      * @return
      * @param <T> 自定义实体类
      */
-    public <T> List<T> query(String sql, List<String> params) {
+    public <T> List<T> query(String sql, List<String> params, Class<T> clazz) {
         try {
-            Map<String, String> matadata = buildSqlMetadata(sql, params);
-            TypeRef<List<T>> responseType = new TypeRef<>(){};
-            List<T> response = daprClient.invokeBinding(DaprConstant.DAPR_SQL_BINDING,
-                    DaprConstant.DAPR_SQL_QUERY,null,
-                    matadata, responseType).block();
-            return response;
+            Map<String, String> metadata = buildSqlMetadata(sql, params);
+            TypeRef<List<LinkedHashMap>> responseType = new TypeRef<>() {};
+            List<LinkedHashMap> result = daprClient.invokeBinding(DaprConstant.DAPR_SQL_BINDING,
+                    DaprConstant.DAPR_SQL_QUERY, null, metadata, responseType).block();
+
+            // 将 LinkedHashMap 转换为目标类型
+            return result.stream()
+                    .map(map -> objectMapper.convertValue(map, clazz))
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             LOGGER.error("query failed {}", e.getMessage());
             return null;
         }
     }
+
 
 
     /**

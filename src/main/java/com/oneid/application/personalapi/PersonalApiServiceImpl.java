@@ -11,10 +11,7 @@
 
 package com.oneid.application.personalapi;
 
-import com.oneid.application.personalapi.dto.PersonalApiTokenDTO;
-import com.oneid.application.personalapi.dto.PersonalApiTokenDetailDTO;
-import com.oneid.application.personalapi.dto.PersonalApiTokenIdDTO;
-import com.oneid.application.personalapi.dto.UserInfoDTO;
+import com.oneid.application.personalapi.dto.*;
 import com.oneid.application.personalapi.vo.PersonalApiTokenVO;
 import com.oneid.infrastructure.personalapi.PersonalApiMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,18 +32,18 @@ public class PersonalApiServiceImpl implements PersonalApiService {
     }
 
     @Override
-    public void updateToken(PersonalApiTokenDetailDTO personalApiTokenDetailDTO) {
-        personalApiMapper.updatePersonalApiToken(personalApiTokenDetailDTO);
+    public void updateToken(PersonalApiTokenDetailDTO personalApiTokenDetailDTO, UserInfoDTO userInfoDTO) {
+        personalApiMapper.updatePersonalApiToken(personalApiTokenDetailDTO, userInfoDTO);
     }
 
     @Override
-    public void refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO) {
-        personalApiMapper.refreshPersonApiToken(personalApiTokenIdDTO);
+    public void refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO, UserInfoDTO userInfoDTO) {
+        personalApiMapper.refreshPersonApiToken(personalApiTokenIdDTO, userInfoDTO);
     }
 
     @Override
-    public void deleteToken(PersonalApiTokenIdDTO personalApiTokenIdDTO) {
-        personalApiMapper.deletePersonalApiToken(personalApiTokenIdDTO);
+    public void deleteToken(PersonalApiTokenIdDTO personalApiTokenIdDTO, UserInfoDTO userInfoDTO) {
+        personalApiMapper.deletePersonalApiToken(personalApiTokenIdDTO, userInfoDTO);
     }
 
     @Override
@@ -57,5 +54,10 @@ public class PersonalApiServiceImpl implements PersonalApiService {
     @Override
     public ResponseEntity getAllPermissions() {
         return personalApiMapper.getAllPermissions();
+    }
+
+    @Override
+    public ResponseEntity checkToken(CheckTokenDTO checkTokenDTO) {
+        return personalApiMapper.checkToken(checkTokenDTO);
     }
 }

@@ -15,16 +15,14 @@ import com.alibaba.fastjson2.JSONObject;
 import com.oneid.application.personalapi.AccountApiService;
 import com.oneid.application.personalapi.AccountApiServiceImpl;
 import com.oneid.application.personalapi.PersonalApiServiceImpl;
-import com.oneid.application.personalapi.dto.PersonalApiTokenDTO;
-import com.oneid.application.personalapi.dto.PersonalApiTokenDetailDTO;
-import com.oneid.application.personalapi.dto.PersonalApiTokenIdDTO;
-import com.oneid.application.personalapi.dto.UserInfoDTO;
+import com.oneid.application.personalapi.dto.*;
 import com.oneid.common.exception.CustomException;
 import com.oneid.common.exception.ErrorCode;
 import com.oneid.common.utils.ResultUtil;
 import com.oneid.infrastructure.dapr.DaprEmailActuator;
 import com.oneid.infrastructure.dapr.DaprRedisActuator;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,11 +63,11 @@ public class PersonalApiController {
      * @return 令牌信息
      */
     @RequestMapping(value = "/createToken", method = RequestMethod.POST)
-    public ResponseEntity createToken(HttpServletRequest servletRequest,
+    public ResponseEntity createToken(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
                                       @Valid @RequestBody PersonalApiTokenDTO personalApiTokenDTO,
-                                      @CookieValue(value = "_Y_G_", required = false) String ygToken) {
+                                      @CookieValue(value = "_Y_G_") String ygToken) {
         String token = servletRequest.getHeader("token");
-        UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken);
+        UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken, servletResponse);
         personalApiServiceImpl.createToken(personalApiTokenDTO, userInfoDTO);
         return ResultUtil.result(HttpStatus.OK, "success", null);
     }
@@ -83,12 +81,12 @@ public class PersonalApiController {
      * @return 更新结果
      */
     @RequestMapping(value = "/updateToken", method = RequestMethod.POST)
-    public ResponseEntity updateToken(HttpServletRequest servletRequest,
+    public ResponseEntity updateToken(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
                                       @Valid @RequestBody PersonalApiTokenDetailDTO personalApiTokenDetailDTO,
-                                      @CookieValue(value = "_Y_G_", required = false) String ygToken) {
+                                      @CookieValue(value = "_Y_G_") String ygToken) {
         String token = servletRequest.getHeader("token");
-        accountApiServiceImpl.checkLogin(token, ygToken);
-        personalApiServiceImpl.updateToken(personalApiTokenDetailDTO);
+        UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken, servletResponse);
+        personalApiServiceImpl.updateToken(personalApiTokenDetailDTO, userInfoDTO);
         return ResultUtil.result(HttpStatus.OK, "success", null);
     }
 
@@ -101,12 +99,12 @@ public class PersonalApiController {
      * @return 刷新的token
      */
     @RequestMapping(value = "/refreshToken", method = RequestMethod.POST)
-    public ResponseEntity refreshToken(HttpServletRequest servletRequest,
+    public ResponseEntity refreshToken(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
                                        @Valid @RequestBody PersonalApiTokenIdDTO personalApiTokenIdDTO,
-                                       @CookieValue(value = "_Y_G_", required = false) String ygToken) {
+                                       @CookieValue(value = "_Y_G_") String ygToken) {
         String token = servletRequest.getHeader("token");
-        accountApiServiceImpl.checkLogin(token, ygToken);
-        personalApiServiceImpl.refreshToken(personalApiTokenIdDTO);
+        UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken, servletResponse);
+        personalApiServiceImpl.refreshToken(personalApiTokenIdDTO, userInfoDTO);
         return ResultUtil.result(HttpStatus.OK, "success", null);
     }
 
@@ -119,12 +117,12 @@ public class PersonalApiController {
      * @return 删除结果
      */
     @RequestMapping(value = "/deleteToken", method = RequestMethod.POST)
-    public ResponseEntity deleteToken(HttpServletRequest servletRequest,
+    public ResponseEntity deleteToken(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
                                       @Valid @RequestBody PersonalApiTokenIdDTO personalApiTokenIdDTO,
-                                      @CookieValue(value = "_Y_G_", required = false) String ygToken) {
+                                      @CookieValue(value = "_Y_G_") String ygToken) {
         String token = servletRequest.getHeader("token");
-        accountApiServiceImpl.checkLogin(token, ygToken);
-        personalApiServiceImpl.deleteToken(personalApiTokenIdDTO);
+        UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken, servletResponse);
+        personalApiServiceImpl.deleteToken(personalApiTokenIdDTO, userInfoDTO);
         return ResultUtil.result(HttpStatus.OK, "success", null);
     }
 
@@ -136,10 +134,10 @@ public class PersonalApiController {
      * @return 私人令牌信息
      */
     @RequestMapping(value = "/getToken", method = RequestMethod.GET)
-    public ResponseEntity getToken(HttpServletRequest servletRequest,
-                                   @CookieValue(value = "_Y_G_", required = false) String ygToken) {
+    public ResponseEntity getToken(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
+                                   @CookieValue(value = "_Y_G_") String ygToken) {
         String token = servletRequest.getHeader("token");
-        UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken);
+        UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken, servletResponse);
         return personalApiServiceImpl.getPersonalApiTokens(userInfoDTO.getUserId());
     }
 
@@ -151,10 +149,10 @@ public class PersonalApiController {
      * @return 私人令牌权限信息
      */
     @RequestMapping(value = "/getAllPermissions", method = RequestMethod.GET)
-    public ResponseEntity getAllPermissions(HttpServletRequest servletRequest,
-                                            @CookieValue(value = "_Y_G_", required = false) String ygToken) {
+    public ResponseEntity getAllPermissions(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
+                                            @CookieValue(value = "_Y_G_") String ygToken) {
         String token = servletRequest.getHeader("token");
-        accountApiServiceImpl.checkLogin(token, ygToken);
+        accountApiServiceImpl.checkLogin(token, ygToken, servletResponse);
         return personalApiServiceImpl.getAllPermissions();
     }
 
@@ -181,5 +179,13 @@ public class PersonalApiController {
         daprRedisActuator.deleteState("zhouyi");
         result.put("delete", daprRedisActuator.getState("zhouyi"));
         return ResultUtil.result(HttpStatus.OK, "success", result);
+    }
+
+    /**
+     * 验证token的有效性
+     */
+    @RequestMapping(value = "/token/check", method = RequestMethod.POST)
+    public ResponseEntity checkToken(@Valid @RequestBody CheckTokenDTO checkTokenDTO) {
+        return personalApiServiceImpl.checkToken(checkTokenDTO);
     }
 }

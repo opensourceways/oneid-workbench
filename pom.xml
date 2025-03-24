@@ -193,6 +193,13 @@
             <version>1.13.1</version>
         </dependency>
 
+        <!-- captcha -->
+        <dependency>
+            <groupId>com.anji-plus</groupId>
+            <artifactId>spring-boot-starter-captcha</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
