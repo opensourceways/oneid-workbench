@@ -58,9 +58,9 @@ public class PersonalApiTokenDO {
     private String userName;
 
     /**
-     * 过期时间.
+     * 过期时间(时间戳).
      */
-    private String expireAt;
+    private Long expireAt;
 
     /**
      * 创建时间.
