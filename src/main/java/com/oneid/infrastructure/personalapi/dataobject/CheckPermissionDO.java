@@ -10,7 +10,7 @@ import java.io.Serial;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CheckPermissionDo {
+public class CheckPermissionDO {
     /**
      * Serializable class with a defined serial version UID.
      */

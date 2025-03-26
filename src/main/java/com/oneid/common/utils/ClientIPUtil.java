@@ -57,18 +57,23 @@ public class ClientIPUtil {
         if (checkIp(ip)) {
             headerName = "remote addr";
             ip = request.getRemoteAddr();
-            // 127.0.0.1 ipv4, 0:0:0:0:0:0:0:1 ipv6
-            if ("127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)) {
-                //根据网卡取本机配置的IP
-                InetAddress inet = null;
-                try {
-                    inet = InetAddress.getLocalHost();
-                } catch (UnknownHostException e) {
-                    LOGGER.error("get local host error: " + e.getMessage());
-                }
-                if (inet != null) {
-                    ip = inet.getHostAddress();
-                }
+            ip = getHostIp(ip);
+        }
+        return ip;
+    }
+
+    private static String getHostIp(String ip) {
+        // 127.0.0.1 ipv4, 0:0:0:0:0:0:0:1 ipv6
+        if ("127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)) {
+            //根据网卡取本机配置的IP
+            InetAddress inet = null;
+            try {
+                inet = InetAddress.getLocalHost();
+            } catch (UnknownHostException e) {
+                LOGGER.error("get local host error: " + e.getMessage());
+            }
+            if (inet != null) {
+                ip = inet.getHostAddress();
             }
         }
         return ip;

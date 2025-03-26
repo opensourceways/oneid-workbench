@@ -11,6 +11,7 @@
 
 package com.oneid.application.personalapi;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.oneid.application.personalapi.dto.*;
 import com.oneid.application.personalapi.vo.PersonalApiTokenVO;
 import com.oneid.infrastructure.personalapi.PersonalApiMapper;
@@ -27,8 +28,11 @@ public class PersonalApiServiceImpl implements PersonalApiService {
     private PersonalApiMapper personalApiMapper;
 
     @Override
-    public void createToken(PersonalApiTokenDTO personalApiTokenDTO, UserInfoDTO userInfoDTO) {
-        personalApiMapper.createPersonalApiToken(personalApiTokenDTO, userInfoDTO);
+    public JSONObject createToken(PersonalApiTokenDTO personalApiTokenDTO, UserInfoDTO userInfoDTO) {
+        String token = personalApiMapper.createPersonalApiToken(personalApiTokenDTO, userInfoDTO);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", token);
+        return jsonObject;
     }
 
     @Override
@@ -37,8 +41,11 @@ public class PersonalApiServiceImpl implements PersonalApiService {
     }
 
     @Override
-    public void refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO, UserInfoDTO userInfoDTO) {
-        personalApiMapper.refreshPersonApiToken(personalApiTokenIdDTO, userInfoDTO);
+    public JSONObject refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO, UserInfoDTO userInfoDTO) {
+        String newToken = personalApiMapper.refreshPersonApiToken(personalApiTokenIdDTO, userInfoDTO);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", newToken);
+        return jsonObject;
     }
 
     @Override

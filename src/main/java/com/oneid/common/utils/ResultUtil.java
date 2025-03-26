@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public final class ResultUtil {
     private ResultUtil() {
@@ -61,7 +60,8 @@ public final class ResultUtil {
         if (errorCode != null) {
             HashMap<String, Object> msgMap = new HashMap<>();
             msgMap.put("code", errorCode.getCode());
-            msgMap.put("message", errorCode.getMessage());
+            msgMap.put("message_en", errorCode.getMessageEn());
+            msgMap.put("message_zh", errorCode.getMessageZh());
             res.put("msg", msgMap);
         }
         ResponseEntity<HashMap<String, Object>> responseEntity =

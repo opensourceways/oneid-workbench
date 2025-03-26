@@ -1,20 +1,16 @@
 package com.oneid.infrastructure.personalapi;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.oneid.application.personalapi.dto.*;
 import com.oneid.application.personalapi.vo.PersonalApiPermissionVO;
 import com.oneid.application.personalapi.vo.PersonalApiTokenVO;
 import com.oneid.common.constant.TableConstant;
 import com.oneid.common.exception.CustomException;
 import com.oneid.common.exception.ErrorCode;
-import com.oneid.common.utils.CharacterUtil;
-import com.oneid.common.utils.RedisUtil;
-import com.oneid.common.utils.ResultUtil;
+import com.oneid.common.utils.*;
 import com.oneid.infrastructure.dapr.DaprRedisActuator;
 import com.oneid.infrastructure.dapr.DaprSqlActuator;
-import com.oneid.infrastructure.personalapi.dataobject.CheckPermissionDo;
-import com.oneid.infrastructure.personalapi.dataobject.PersonalApiPermissionDO;
-import com.oneid.infrastructure.personalapi.dataobject.PersonalApiTokenDO;
-import lombok.SneakyThrows;
+import com.oneid.infrastructure.personalapi.dataobject.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +32,8 @@ public class PersonalApiMapper {
     private DaprSqlActuator daprSqlActuator;
     @Autowired
     private DaprRedisActuator daprRedisActuator;
+    @Autowired
+    private EncryptionService encryptionService;
 
     public ResponseEntity getAllPermissions() {
         String selectAllPermissionsSql = "select * from " + TableConstant.PERSONAL_API_PERMISSION_TABLE + " where 1 = ?";
@@ -55,7 +53,7 @@ public class PersonalApiMapper {
         try {
             result = convertPersonalTokensDoToPersonalTokensVo(tokens);
         } catch (Exception e) {
-            return ResultUtil.result(HttpStatus.BAD_REQUEST, "failed", e.getMessage());
+            return ResultUtil.result(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, null, null);
         }
         return ResultUtil.result(HttpStatus.OK, "success", result);
     }
@@ -74,12 +72,15 @@ public class PersonalApiMapper {
         log.info("delete personal api token success, id: {}", personalApiTokenIdDTO.getId());
     }
 
-    public void createPersonalApiToken(PersonalApiTokenDTO personalApiTokenDTO, UserInfoDTO userInfoDTO) {
+    public String createPersonalApiToken(PersonalApiTokenDTO personalApiTokenDTO, UserInfoDTO userInfoDTO) {
         if (!checkEmailToken(personalApiTokenDTO.getEmailToken(), userInfoDTO.getEmail())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "emailToken invalid");
+            throw new CustomException(ErrorCode.EMAIL_TOKEN_ERROR, "emailToken invalid");
         }
         if (!checkPersonalTokenNameLegal(personalApiTokenDTO.getName(), userInfoDTO.getUserId())) {
             throw new CustomException(ErrorCode.TOKEN_NAME_REPEATED);
+        }
+        if (!countUserTokens(userInfoDTO.getUserId())) {
+            throw new CustomException(ErrorCode.TOTAL_TOKEN_EXCEED);
         }
         String createTokenSql = "INSERT INTO " + TableConstant.PERSONAL_API_TOKEN_TABLE + """
                  (
@@ -89,11 +90,10 @@ public class PersonalApiMapper {
                 )
                 """;
         List<String> params = new ArrayList<>();
-        String token = CharacterUtil.generate16UUID();
-        while (checkTokenExist(token)) {
-            token = CharacterUtil.generate16UUID();
-        }
-        params.add(token);
+        EncryptTokenDTO encryptTokenDTO = generateUniqueEncryptedToken();
+        String token = encryptTokenDTO.getToken();
+        String encryptToken = encryptTokenDTO.getEncryptedToken();
+        params.add(encryptToken);
         params.add(personalApiTokenDTO.getName());
         params.add(personalApiTokenDTO.getPermissionIds());
         params.add(userInfoDTO.getUserId());
@@ -105,6 +105,23 @@ public class PersonalApiMapper {
             throw new CustomException(ErrorCode.SQL_OPT_ERROR);
         }
         log.info("create personal api token success, param: {}", params);
+        return token;
+    }
+
+    private boolean countUserTokens(String userId) {
+        String countUserTokensSql = "select count(*) as total from " + TableConstant.PERSONAL_API_TOKEN_TABLE + " where user_id = ?";
+        // 准备参数列表
+        List<String> params = new ArrayList<>();
+        params.add(userId);
+
+        // 执行查询
+        List<CountApiTokenDO> result = daprSqlActuator.query(countUserTokensSql, params, CountApiTokenDO.class);
+
+        // 处理结果
+        if (result != null && !result.isEmpty()) {
+            return result.get(0).getTotal() <= 20; // 获取第一个(也是唯一一个)结果
+        }
+        return true;
     }
 
     private boolean checkPersonalTokenNameLegal(String tokenName, String userId) {
@@ -119,7 +136,7 @@ public class PersonalApiMapper {
 
     public void updatePersonalApiToken(PersonalApiTokenDetailDTO personalApiTokenDetailDTO, UserInfoDTO userInfoDTO) {
         if (!checkEmailToken(personalApiTokenDetailDTO.getEmailToken(), userInfoDTO.getEmail())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "emailToken invalid");
+            throw new CustomException(ErrorCode.EMAIL_TOKEN_ERROR, "emailToken invalid");
         }
         if (personalApiTokenDetailDTO.getDayNum() == null) {
             updatePersonalApiTokenWithoutDayNum(personalApiTokenDetailDTO);
@@ -158,24 +175,24 @@ public class PersonalApiMapper {
         log.info("update personal api token success, params:{}", params);
     }
 
-    public void refreshPersonApiToken(PersonalApiTokenIdDTO personalApiTokenIdDTO, UserInfoDTO userInfoDTO) {
+    public String refreshPersonApiToken(PersonalApiTokenIdDTO personalApiTokenIdDTO, UserInfoDTO userInfoDTO) {
         if (!checkEmailToken(personalApiTokenIdDTO.getEmailToken(), userInfoDTO.getEmail())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "emailToken invalid");
+            throw new CustomException(ErrorCode.EMAIL_TOKEN_ERROR, "emailToken invalid");
         }
         String refreshTokenSql = "update " + TableConstant.PERSONAL_API_TOKEN_TABLE
                 + " set token = ? where id = ?";
         List<String> params = new ArrayList<>();
-        String token = CharacterUtil.generate16UUID();
-        while (checkTokenExist(token)) {
-            token = CharacterUtil.generate16UUID();
-        }
-        params.add(token);
+        EncryptTokenDTO encryptTokenDTO = generateUniqueEncryptedToken();
+        String token = encryptTokenDTO.getToken();
+        String encryptToken = encryptTokenDTO.getEncryptedToken();
+        params.add(encryptToken);
         params.add(personalApiTokenIdDTO.getId());
         boolean result = daprSqlActuator.exeSql(refreshTokenSql, params);
         if (!result) {
             throw new CustomException(ErrorCode.SQL_OPT_ERROR);
         }
         log.info("refresh personal api token success, param: {}", params);
+        return token;
     }
 
     public List<String> selectPermissionNameByPermissionIds(String permissionIds) {
@@ -195,11 +212,11 @@ public class PersonalApiMapper {
         }
     }
 
-    public List<PersonalApiTokenDO> selectPersonalApiTokensByToken(String token) {
+    public List<PersonalApiTokenDO> selectPersonalApiTokensByToken(String encryptToken) {
         String selectPersonalApiTokenSql = "select * from " + TableConstant.PERSONAL_API_TOKEN_TABLE
                 + " where token = ? ";
         List<String> params = new ArrayList<>();
-        params.add(token);
+        params.add(encryptToken);
         return daprSqlActuator.query(selectPersonalApiTokenSql, params, PersonalApiTokenDO.class);
     }
 
@@ -216,7 +233,7 @@ public class PersonalApiMapper {
         List<String> params = new ArrayList<>();
         params.add(String.valueOf(idList.size()));
         params.add(permissionIds);
-        List<CheckPermissionDo> ids = daprSqlActuator.query(checkPermissionIdsSql, params, CheckPermissionDo.class);
+        List<CheckPermissionDO> ids = daprSqlActuator.query(checkPermissionIdsSql, params, CheckPermissionDO.class);
         if (ids == null || ids.isEmpty()) {
             return false;
         }
@@ -224,12 +241,38 @@ public class PersonalApiMapper {
     }
 
     public ResponseEntity checkToken(CheckTokenDTO checkTokenDTO) {
-        List<PersonalApiTokenDO> tokens = selectPersonalApiTokensByToken(checkTokenDTO.getToken());
+        String encryptToken = null;
+        try {
+            encryptToken = encryptionService.encrypt(checkTokenDTO.getToken());
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.ENCRYPT_TOKEN_ERROR);
+        }
+        List<PersonalApiTokenDO> tokens = selectPersonalApiTokensByToken(encryptToken);
         if (tokens == null || tokens.isEmpty()) {
             throw new CustomException(ErrorCode.TOKEN_ERROR);
         }
         PersonalApiTokenDO personalApiTokenDO = tokens.get(0);
-        return null;
+        List<String> permissionIds = CharacterUtil.csvToStringList(personalApiTokenDO.getPermissionIds());
+        boolean permissionCheckPass = permissionIds.stream()
+                .map(this::selectPersonalApiUrlsByPermissionId)
+                .filter(urls -> urls != null && !urls.isEmpty())  // 同时检查非null和非空
+                .flatMap(List::stream)
+                .anyMatch(url -> url.getUri().equals(checkTokenDTO.getUrl()));
+        if (permissionCheckPass) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId", personalApiTokenDO.getUserId());
+            return ResultUtil.result(HttpStatus.OK, "success", jsonObject);
+        } else {
+            throw new CustomException(ErrorCode.TOKEN_ERROR);
+        }
+    }
+
+    public List<PersonalApiUrlDO> selectPersonalApiUrlsByPermissionId(String permissionId) {
+        String selectPersonalApiUrlSql = "select * from " + TableConstant.PERSONAL_API_URL_TABLE
+                + " where permission_id = ?";
+        List<String> params = new ArrayList<>();
+        params.add(permissionId);
+        return daprSqlActuator.query(selectPersonalApiUrlSql, params, PersonalApiUrlDO.class);
     }
 
     private boolean checkTokenExist(String token) {
@@ -250,10 +293,10 @@ public class PersonalApiMapper {
         PersonalApiTokenVO vo = new PersonalApiTokenVO();
         vo.setId(token.getId());
         vo.setName(token.getName());
-        vo.setUpdateAt(String.valueOf(token.getExpireAt()));
+        vo.setExpireAt(DateUtil.convertTimestampToSlashFormat(token.getExpireAt()));
         vo.setPermissionIds(token.getPermissionIds());
-        vo.setCreateAt(token.getCreateAt());
-        vo.setUpdateAt(token.getUpdateAt());
+        vo.setCreateAt(DateUtil.convertISO8601ToSlashFormat(token.getCreateAt()));
+        vo.setUpdateAt(DateUtil.convertISO8601ToSlashFormat(token.getUpdateAt()));
         List<String> permissionNames = selectPermissionNameByPermissionIds(token.getPermissionIds());
         vo.setPermissionNames(CharacterUtil.listToCsv(permissionNames));
         return vo;
@@ -277,13 +320,34 @@ public class PersonalApiMapper {
     }
 
     private Boolean checkEmailToken(String emailToken, String email) {
-        String emailTokenKey = RedisUtil.getEmailTokenRedisKey(email.toLowerCase());
-        String rightToken = daprRedisActuator.getState(emailTokenKey);
-        if (rightToken == null || !rightToken.equals(emailToken)) {
-            return false;
-        } else {
-            daprRedisActuator.deleteState(emailTokenKey);
-            return true;
+        return false;
+//        String emailTokenKey = RedisUtil.getEmailTokenRedisKey(email.toLowerCase());
+//        String rightToken = daprRedisActuator.getState(emailTokenKey);
+//        if (rightToken == null || !rightToken.equals(emailToken)) {
+//            return false;
+//        } else {
+//            daprRedisActuator.deleteState(emailTokenKey);
+//            return true;
+//        }
+    }
+
+    public EncryptTokenDTO generateUniqueEncryptedToken() {
+        int maxAttempts = 10; // 防止无限循环
+        int attempts = 0;
+
+        while (attempts < maxAttempts) {
+            String token = CharacterUtil.generate32UUID();
+            try {
+                String encryptToken = encryptionService.encrypt(token);
+                if (!checkTokenExist(encryptToken)) {
+                    return new EncryptTokenDTO(token, encryptToken);
+                }
+            } catch (Exception e) {
+                throw new CustomException(ErrorCode.ENCRYPT_TOKEN_ERROR);
+            }
+            attempts++;
         }
+
+        throw new CustomException(ErrorCode.ENCRYPT_TOKEN_ERROR);
     }
 }

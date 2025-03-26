@@ -11,6 +11,7 @@
 
 package com.oneid.controller;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.anji.captcha.model.common.RepCodeEnum;
 import com.anji.captcha.model.common.ResponseModel;
 import com.anji.captcha.model.vo.CaptchaVO;
@@ -20,13 +21,15 @@ import com.oneid.application.personalapi.AccountApiServiceImpl;
 import com.oneid.application.personalapi.CommonApiServiceImpl;
 import com.oneid.application.personalapi.dto.CodeInfoDTO;
 import com.oneid.application.personalapi.dto.EmailInfoDTO;
-import com.oneid.application.personalapi.dto.PersonalApiTokenDTO;
 import com.oneid.application.personalapi.dto.UserInfoDTO;
 import com.oneid.common.utils.ClientIPUtil;
+import com.oneid.common.utils.ResultUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,6 +57,12 @@ public class CommonAPIController {
      */
     @Autowired
     private AccountApiServiceImpl accountApiServiceImpl;
+
+    /**
+     * 当前工作台是否为新版本
+     */
+    @Value("${personal.token.version.is.new}")
+    private boolean isNewVersion;
 
     /**
      * 表示服务正常状态的常量.
@@ -158,6 +167,18 @@ public class CommonAPIController {
         String token = request.getHeader("token");
         UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken, servletResponse);
         return commonApiServiceImpl.verifyCode(codeInfoDTO, userInfoDTO);
+    }
+
+    /**
+     * 检查当前工作台使用的是否为新版本
+     *
+     * @return 返回 ResponseEntity 对象
+     */
+    @RequestMapping(value = "/version/check", method = RequestMethod.GET)
+    public ResponseEntity versionCheck() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("isNewVersion", isNewVersion);
+        return ResultUtil.result(HttpStatus.OK, "success", jsonObject);
     }
 
 

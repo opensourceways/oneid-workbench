@@ -1,8 +1,6 @@
 package com.oneid.common.utils;
 
 
-import cn.authing.core.types.S;
-
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +15,14 @@ public class CharacterUtil {
      *
      * @return UUID
      */
-    public static String generate16UUID() {
-        byte[] bytes = new byte[8]; // 8字节 = 64位，生成16字符十六进制
+    public static String generate32UUID() {
+        byte[] bytes = new byte[16]; // 16字节 = 128位，生成32字符十六进制
         random.nextBytes(bytes);
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append(String.format("%02X", b));
         }
-        return sb.toString().substring(0, 16);
+        return sb.toString().substring(0, 32);
     }
 
     /**

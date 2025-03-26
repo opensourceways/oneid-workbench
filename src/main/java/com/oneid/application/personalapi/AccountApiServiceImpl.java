@@ -21,7 +21,7 @@ import java.util.Map;
 public class AccountApiServiceImpl implements AccountApiService {
 
     private static final Logger log = LoggerFactory.getLogger(AccountApiServiceImpl.class);
-    @Value("${account.person.center.url:https://omapi.test.osinfra.cn/oneid/personal/center/user}")
+    @Value("${account.person.center.url}")
     private String accountUrl;
 
     @Override

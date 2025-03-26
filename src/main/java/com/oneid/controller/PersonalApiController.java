@@ -68,8 +68,8 @@ public class PersonalApiController {
                                       @CookieValue(value = "_Y_G_") String ygToken) {
         String token = servletRequest.getHeader("token");
         UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken, servletResponse);
-        personalApiServiceImpl.createToken(personalApiTokenDTO, userInfoDTO);
-        return ResultUtil.result(HttpStatus.OK, "success", null);
+        JSONObject newToken = personalApiServiceImpl.createToken(personalApiTokenDTO, userInfoDTO);
+        return ResultUtil.result(HttpStatus.OK, "success", newToken);
     }
 
     /**
@@ -104,8 +104,8 @@ public class PersonalApiController {
                                        @CookieValue(value = "_Y_G_") String ygToken) {
         String token = servletRequest.getHeader("token");
         UserInfoDTO userInfoDTO = accountApiServiceImpl.getUserInfo(token, ygToken, servletResponse);
-        personalApiServiceImpl.refreshToken(personalApiTokenIdDTO, userInfoDTO);
-        return ResultUtil.result(HttpStatus.OK, "success", null);
+        JSONObject newToken = personalApiServiceImpl.refreshToken(personalApiTokenIdDTO, userInfoDTO);
+        return ResultUtil.result(HttpStatus.OK, "success", newToken);
     }
 
     /**
@@ -185,7 +185,9 @@ public class PersonalApiController {
      * 验证token的有效性
      */
     @RequestMapping(value = "/token/check", method = RequestMethod.POST)
-    public ResponseEntity checkToken(@Valid @RequestBody CheckTokenDTO checkTokenDTO) {
+    public ResponseEntity checkToken(HttpServletRequest servletRequest,
+                                     @Valid @RequestBody CheckTokenDTO checkTokenDTO) {
+        checkTokenDTO.setToken(servletRequest.getHeader("token"));
         return personalApiServiceImpl.checkToken(checkTokenDTO);
     }
 }

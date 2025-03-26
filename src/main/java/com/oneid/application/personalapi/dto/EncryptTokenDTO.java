@@ -1,6 +1,5 @@
 package com.oneid.application.personalapi.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,16 +7,14 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CheckTokenDTO {
-
+public class EncryptTokenDTO {
     /**
-     * 需要校验的token
+     * 生成token
      */
     private String token;
 
     /**
-     * 请求访问的url
+     * 加密后的token结果
      */
-    @NotNull
-    private String url;
+    private String encryptedToken;
 }

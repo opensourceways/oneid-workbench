@@ -11,6 +11,7 @@
 
 package com.oneid.application.personalapi;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.oneid.application.personalapi.dto.*;
 import org.springframework.http.ResponseEntity;
 
@@ -21,7 +22,7 @@ public interface PersonalApiService {
      * @param personalApiTokenDTO 用户token设置DTO
      * @param userInfoDTO 用户账号信息
      */
-    void createToken(PersonalApiTokenDTO personalApiTokenDTO, UserInfoDTO userInfoDTO);
+    JSONObject createToken(PersonalApiTokenDTO personalApiTokenDTO, UserInfoDTO userInfoDTO);
 
     /**
      * 更新token
@@ -33,7 +34,7 @@ public interface PersonalApiService {
      * 刷新token
      * @param personalApiTokenIdDTO 需要刷新的token信息
      */
-    void refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO, UserInfoDTO userInfoDTO);
+    JSONObject refreshToken(PersonalApiTokenIdDTO personalApiTokenIdDTO, UserInfoDTO userInfoDTO);
 
     /**
      * 删除token

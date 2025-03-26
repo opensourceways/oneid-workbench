@@ -39,17 +39,17 @@ public class CommonApiServiceImpl implements CommonApiService {
         boolean isSuccess = verifyCaptcha(emailInfoDTO.getCaptchaVerification());
         // 验证码二次校验
         if (!isSuccess) {
-            return ResultUtil.result(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST.getMessage(), null);
+            return ResultUtil.result(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, null, null);
         }
         String account = emailInfoDTO.getAccount();
         // 限制1分钟只能发送一次
         String redisKey = RedisUtil.getSendEmailCodeRedisKey(account.toLowerCase());
         String codeOld = daprRedisActuator.getState(redisKey);
         if (codeOld != null) {
-            return ResultUtil.result(HttpStatus.BAD_REQUEST, null, ErrorCode.VERIFY_CODE_HAS_BEEN_SENT.getMessage(), null);
+            return ResultUtil.result(HttpStatus.BAD_REQUEST, null, ErrorCode.VERIFY_CODE_HAS_BEEN_SENT.getMessageEn(), null);
         }
         if (!emailInfoDTO.getChannel().equals(CommonConstant.CHANNEL_TYPE_TOKEN_EMAIL_CHECK)) {
-            return ResultUtil.result(HttpStatus.BAD_REQUEST, ErrorCode.ONLY_FOR_TOKEN_CHECK.getMessage(), null);
+            return ResultUtil.result(HttpStatus.BAD_REQUEST, ErrorCode.ONLY_FOR_TOKEN_CHECK , null, null);
         }
 
         String code = CharacterUtil.generateRandom6DigitNumber();
@@ -68,9 +68,15 @@ public class CommonApiServiceImpl implements CommonApiService {
         String code = daprRedisActuator.getState(codeRedisKey);
         if (StringUtils.isBlank(code)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "code is wrong or invalid");
+        } else {
+            daprRedisActuator.deleteState(codeRedisKey);
         }
         String emailTokenKey = RedisUtil.getEmailTokenRedisKey(codeInfoDTO.getAccount().toLowerCase());
-        String emailToken = CharacterUtil.generate16UUID();
+        String emailToken = CharacterUtil.generate32UUID();
+        String oldToken = daprRedisActuator.getState(emailTokenKey);
+        if (StringUtils.isNotBlank(oldToken)) {
+            daprRedisActuator.deleteState(emailTokenKey);
+        }
         daprRedisActuator.saveState(emailTokenKey, emailToken, 600);
         JSONObject emailTokenObj = new JSONObject();
         emailTokenObj.put("emailToken", emailToken);
