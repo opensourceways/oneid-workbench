@@ -13,15 +13,17 @@ package com.oneid.application.personalapi;
 
 
 import com.oneid.application.personalapi.dto.UserInfoDTO;
+import jakarta.servlet.http.HttpServletResponse;
 
 public interface AccountApiService {
     /**
      * 通过ygToken和utToken在账号服务中获取用户信息
      * @param utToken _U_T_
      * @param ygToken _Y_G_
+     * @param servletResponse http响应
      * @return 用户信息结构体
      */
-    UserInfoDTO getUserInfo(String utToken, String ygToken);
+    UserInfoDTO getUserInfo(String utToken, String ygToken, HttpServletResponse servletResponse);
 
-    void checkLogin(String utToken, String ygToken);
+    void checkLogin(String utToken, String ygToken, HttpServletResponse servletResponse);
 }

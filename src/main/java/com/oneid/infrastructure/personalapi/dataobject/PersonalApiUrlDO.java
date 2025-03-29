@@ -11,6 +11,7 @@
 
 package com.oneid.infrastructure.personalapi.dataobject;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -40,10 +41,12 @@ public class PersonalApiUrlDO {
     /**
      * 权限ID.
      */
+    @JsonProperty("permission_id")
     private String permissionId;
 
     /**
      * 具体权限操作内容.
      */
+    @JsonProperty("opt_permission")
     private String optPermission;
 }

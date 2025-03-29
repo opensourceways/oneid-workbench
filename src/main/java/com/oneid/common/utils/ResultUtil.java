@@ -12,13 +12,12 @@
 package com.oneid.common.utils;
 
 import com.alibaba.fastjson2.JSON;
-import com.oneid.common.constant.MessageCodeConstant;
+import com.oneid.common.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public final class ResultUtil {
     private ResultUtil() {
@@ -48,46 +47,21 @@ public final class ResultUtil {
      * 构建响应实体方法.
      *
      * @param status  HTTP状态
-     * @param msgCode 消息代码配置
+     * @param errorCode 消息代码配置
      * @param msg     消息
      * @param data    数据对象
      * @return ResponseEntity 响应实体
      */
-    public static ResponseEntity result(HttpStatus status, MessageCodeConstant msgCode, String msg, Object data) {
-        return setResult(status, msgCode, msg, data, MessageCodeConstant.getErrorCode());
-    }
-
-    /**
-     * 设置响应实体，包括HTTP状态、消息代码配置、消息内容、数据和错误码映射.
-     *
-     * @param status     HTTP状态
-     * @param msgCode    消息代码配置
-     * @param msg        消息内容
-     * @param data       数据
-     * @param error2code 错误码映射
-     * @return ResponseEntity 响应实体
-     */
-    private static ResponseEntity setResult(HttpStatus status, MessageCodeConstant msgCode, String msg, Object data,
-                                            Map<String, MessageCodeConstant> error2code) {
+    public static ResponseEntity result(HttpStatus status, ErrorCode errorCode, String msg, Object data) {
         HashMap<String, Object> res = new HashMap<>();
         res.put("code", status.value());
         res.put("data", data);
         res.put("msg", msg);
-
-        if (status.value() == 400 && msgCode == null) {
-            for (Map.Entry<String, MessageCodeConstant> entry : error2code.entrySet()) {
-                if (msg.contains(entry.getKey())) {
-                    msgCode = entry.getValue();
-                    break;
-                }
-            }
-        }
-
-        if (msgCode != null) {
+        if (errorCode != null) {
             HashMap<String, Object> msgMap = new HashMap<>();
-            msgMap.put("code", msgCode.getCode());
-            msgMap.put("message_en", msgCode.getMsgEn());
-            msgMap.put("message_zh", msgCode.getMsgZh());
+            msgMap.put("code", errorCode.getCode());
+            msgMap.put("message_en", errorCode.getMessageEn());
+            msgMap.put("message_zh", errorCode.getMessageZh());
             res.put("msg", msgMap);
         }
         ResponseEntity<HashMap<String, Object>> responseEntity =

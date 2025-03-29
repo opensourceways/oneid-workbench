@@ -60,7 +60,7 @@ public class ParamValidConstant {
     /**
      * 私人令牌ID正则.
      */
-    public static final String API_TOKEN_ID_REG = "^[0-9a-zA-Z]{1,32}$";
+    public static final String API_TOKEN_ID_REG = "^[0-9a-zA-Z-]{1,40}$";
 
     /**
      * 私人令牌ID最小长度.
@@ -70,7 +70,7 @@ public class ParamValidConstant {
     /**
      * 私人令牌ID最大长度.
      */
-    public static final int API_TOKEN_ID_MAX = 32;
+    public static final int API_TOKEN_ID_MAX = 40;
 
     /**
      * 邮箱身份验证正则.
@@ -86,4 +86,35 @@ public class ParamValidConstant {
      * 邮箱身份验证最大长度.
      */
     public static final int EMAIL_TOKEN_MAX = 32;
+
+    /**
+     * 邮箱验证正则
+     */
+    public static final String EMAIL_REG = "^[A-Za-z0-9-._\\u4e00-\\u9fa5]{1,40}"
+            + "@[a-zA-Z0-9_-]{1,20}(\\.[a-zA-Z0-9_-]{1,20}){1,10}$";
+
+    /**
+     * 邮箱最小长度
+     */
+    public static final int EMAIL_MIN = 1;
+
+    /**
+     *邮箱最大长度
+     */
+    public static final int EMAIL_MAX = 80;
+
+    /**
+     * 验证码正则
+     */
+    public static final String CODE_REG = "^[0-9a-zA-Z]{1,20}$";
+
+    /**
+     *验证码最小长度
+     */
+    public static final int CODE_MIN = 1;
+
+    /**
+     * 验证码最大长度
+     */
+    public static final int CODE_MAX = 20;
 }
